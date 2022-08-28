@@ -24,7 +24,7 @@ extern "C" {
 #include "ili9481.h"
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9488
 #include "ili9488.h"
-#elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7789
+#elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7789 || defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7789_1
 #include "st7789.h"
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7796S
 #include "st7796s.h"

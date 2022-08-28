@@ -11,6 +11,7 @@
 #include "driver/gpio.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
+#include "freertos/projdefs.h"
 #include "freertos/task.h"
 
 #ifdef CONFIG_LV_M5STICKC_HANDLE_AXP192
@@ -78,12 +79,22 @@ void st7735s_init(void)
 		{ST7735_PWCTR4, {0x8A,0x2A }, 2},           // Power control, 2 args, no delay: BCLK/2, Opamp current small & Medium low
 		{ST7735_PWCTR5, {0x8A, 0xEE}, 2},           // Power control, 2 args, no delay:
 		{ST7735_VMCTR1, {0x0E}, 1},                 // Power control, 1 arg, no delay:
+
+// in set_orientation
+//		{0x36, {0xA8}, 1},               	// set color mode, 1 arg, no delay: 16-bit color RGB (0xA0 BGR)
+//		{0x36, {0xA0}, 1},               	// set color mode, 1 arg, no delay: 16-bit color RGB (0xA0 RGB)
+
+		{ST7735_COLMOD, {0x05}, 1},               	// set color mode, 1 arg, no delay: 16-bit color
+//		{0x3A, {0x55}, 1},               	// set color mode, 1 arg, no delay: 16-bit color
 #if ST7735S_INVERT_COLORS == 1
 		{ST7735_INVON, {0}, 0},                     // set inverted mode
 #else
  		{ST7735_INVOFF, {0}, 0},                    // set non-inverted mode
 #endif
-		{ST7735_COLMOD, {0x05}, 1},               	// set color mode, 1 arg, no delay: 16-bit color
+// FRMCTR/INVCTR
+//		{0xB1, {0x00, 0x18}, 2},
+//		{0xB6, {0x08, 0xA2, 0x27, 0x00}, 4},
+
 		{ST7735_GMCTRP1, {0x02, 0x1c, 0x07, 0x12,
 			0x37, 0x32, 0x29, 0x2d,
 			0x29, 0x25, 0x2B, 0x39,
@@ -92,24 +103,36 @@ void st7735s_init(void)
 			0x2E, 0x2C, 0x29, 0x2D,
 			0x2E, 0x2E, 0x37, 0x3F,
 			0x00, 0x00, 0x02, 0x10}, 16},           // 16 args, no delay:
+/*
+		{0x26, {0x01}, 1},               	// gamma set
+		{ST7735_GMCTRP1, {0x0f, 0x31, 0x2b, 0x0c,
+			0x0e, 0x08, 0x4e, 0xf1,
+			0x37, 0x07, 0x10, 0x03,
+			0x0e, 0x09, 0x00}, 15},           // 15 args, no delay:
+		{ST7735_GMCTRN1, {0x00, 0x0e, 0x14, 0x03,
+			0x11, 0x07, 0x31, 0xc1,
+			0x48, 0x08, 0x0f, 0x0c,
+			0x31, 0x36, 0x0f}, 15},           // 15 args, no delay:
+*/
 		{ST7735_NORON, {0}, TFT_INIT_DELAY},       	// Normal display on, no args, w/delay 10 ms delay
+//		{0x11, {0}, TFT_INIT_DELAY},
 		{ST7735_DISPON, {0}, TFT_INIT_DELAY},       // Main screen turn on, no args w/delay 100 ms delay
 		{0, {0}, 0xff}
     };
 
 	//Initialize non-SPI GPIOs
-        gpio_pad_select_gpio(ST7735S_DC);
+	esp_rom_gpio_pad_select_gpio(ST7735S_DC);
 	gpio_set_direction(ST7735S_DC, GPIO_MODE_OUTPUT);
 
 #if ST7735S_USE_RST
-        gpio_pad_select_gpio(ST7735S_RST);
+	esp_rom_gpio_pad_select_gpio(ST7735S_RST);
 	gpio_set_direction(ST7735S_RST, GPIO_MODE_OUTPUT);
 
 	//Reset the display
 	gpio_set_level(ST7735S_RST, 0);
-	vTaskDelay(100 / portTICK_RATE_MS);
+	vTaskDelay(pdMS_TO_TICKS(100));
 	gpio_set_level(ST7735S_RST, 1);
-	vTaskDelay(100 / portTICK_RATE_MS);
+	vTaskDelay(pdMS_TO_TICKS(100));
 #endif
 
 	ESP_LOGI(TAG, "ST7735S initialization.");
@@ -120,7 +143,7 @@ void st7735s_init(void)
 		st7735s_send_cmd(init_cmds[cmd].cmd);
 		st7735s_send_data(init_cmds[cmd].data, init_cmds[cmd].databytes&0x1F);
 		if (init_cmds[cmd].databytes & 0x80) {
-			vTaskDelay(100 / portTICK_RATE_MS);
+			vTaskDelay(pdMS_TO_TICKS(100));
 		}
 		cmd++;
 	}
@@ -216,6 +239,8 @@ static void st7735s_set_orientation(uint8_t orientation)
         Remark: "inverted" is ignored here
     */
     uint8_t data[] = {0xC8, 0xC8, 0xA8, 0xA8};
+    // RGB - despite specification, RGB seems to be BGR (in big endian)
+    //uint8_t data[] = {0xC0, 0xC0, 0xA0, 0xA0};
 
     ESP_LOGD(TAG, "0x36 command value: 0x%02X", data[orientation]);
 

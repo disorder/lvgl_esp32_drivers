@@ -17,6 +17,8 @@ elseif(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9488)
     list(APPEND SOURCES "lvgl_tft/ili9488.c")
 elseif(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7789)
     list(APPEND SOURCES "lvgl_tft/st7789.c")
+elseif(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7789_1)
+    list(APPEND SOURCES "lvgl_tft/st7789.c")
 elseif(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7735S)
     list(APPEND SOURCES "lvgl_tft/st7735s.c")
 elseif(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7796S)
@@ -86,7 +88,7 @@ endif()
 
 idf_component_register(SRCS ${SOURCES}
                        INCLUDE_DIRS ${LVGL_INCLUDE_DIRS}
-                       REQUIRES lvgl)
+                       REQUIRES lvgl driver)
 
 target_compile_definitions(${COMPONENT_LIB} PUBLIC "-DLV_LVGL_H_INCLUDE_SIMPLE")
 

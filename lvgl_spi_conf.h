@@ -37,7 +37,7 @@ extern "C" {
 #define DISP_SPI_IO3 (-1)
 #endif
 #define DISP_SPI_CLK CONFIG_LV_DISP_SPI_CLK
-#if defined (CONFIG_LV_DISPLAY_USE_SPI_CS)
+#if defined (CONFIG_LV_DISPLAY_USE_SPI_CS) && !defined(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7789_1)
     #define DISP_SPI_CS CONFIG_LV_DISP_SPI_CS
 #else
     #define DISP_SPI_CS (-1)
@@ -167,7 +167,9 @@ extern "C" {
 #endif
 
 
-#if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7789)
+#if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7789_1)
+#define SPI_TFT_SPI_MODE    (3)
+#elif defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7789)
 #define SPI_TFT_SPI_MODE    (2)
 #else
 #define SPI_TFT_SPI_MODE    (0)
